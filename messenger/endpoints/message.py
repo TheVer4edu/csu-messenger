@@ -95,7 +95,7 @@ async def edit_message(message: MessageInDB, user_id=Depends(get_current_user), 
 
 
 async def process_message(text: str):
-    url = "http://lanhost:8085/extra"
+    url = "http://localhost:8085/extra"
     try:
         extra = await async_query(task_url=url, text=text)
     except BaseException as e:

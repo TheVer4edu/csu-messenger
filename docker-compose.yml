@@ -2,6 +2,7 @@ version: "3.6"
 services:
   postgres:
     image: postgres:14.2
+    network_mode: host
     ports:
       - "${DB_PORT}:5432"
     volumes:
@@ -11,6 +12,7 @@ services:
 
   redis:
     restart: always
+    network_mode: host
     image: redis:6.2-alpine
     ports:
         - "${REDIS_PORT:-6379}:6379"

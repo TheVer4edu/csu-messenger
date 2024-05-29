@@ -2,6 +2,7 @@ version: "3.6"
 services:
   messenger:
     restart: always
+    network_mode: host
     build:
       context: ./messenger
       dockerfile: ./Dockerfile.prod
@@ -12,6 +13,7 @@ services:
 
   celery_worker:
     restart: always
+    network_mode: host
     build:
       context: ./messenger
       dockerfile: ./DockerfileWorker.prod
@@ -20,6 +22,7 @@ services:
 
   postptocessor:
     restart: always
+    network_mode: host
     build:
       context: ./postprocessor
       dockerfile: ./Dockerfile

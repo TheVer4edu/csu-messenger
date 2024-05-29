@@ -1,7 +1,21 @@
 version: "3.6"
 services:
+  migrations:
+    network_mode: host
+    build:
+      context: ./messenger
+      dockerfile: ./DockerfileMigrations
+    env_file:
+      - .env
+    volumes:
+      - ./messenger:/app
+
+
   messenger:
     restart: always
+    network_mode: host
+    depends_on:
+      - migrations
     build:
       context: ./messenger
       dockerfile: ./Dockerfile
@@ -14,6 +28,7 @@ services:
 
   celery_worker:
     restart: always
+    network_mode: host
     build:
       context: ./messenger
       dockerfile: ./DockerfileWorker
@@ -24,6 +39,7 @@ services:
 
   postprocessor:
     restart: always
+    network_mode: host
     build:
       context: ./postprocessor
       dockerfile: ./Dockerfile

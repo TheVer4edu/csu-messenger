@@ -72,7 +72,7 @@ async def ws_pubsub(user_id: int, text: str = "test text"):
 @router.post("/post_process_message")
 async def post_process_message(message: str = Body(..., embed=True)):
     """Пост-обработка сообщений: выделение ссылок, упоминаний и и.д."""
-    url = "http://lanhost:8085/extra"
+    url = "http://localhost:8085/extra"
     extra = await async_query(task_url=url, text=message)
 
     return extra

@@ -61,7 +61,7 @@ def get_all_messages_in_chat(db: Session, chat_id: int):  # TODO limits
                 Message.user_chat_id.in_(chats),
                 and_(
                     Message.created_date < datetime.now(),
-                    Message.maybesent == 1
+                    Message.maybesent == True
                 )))\
         .join(UserChat)\
         .order_by(Message.created_date)\
@@ -100,7 +100,7 @@ def get_nearest_messages(db: Session):
         .filter(
             # and_(
             #     Message.created_date > datetime.now(),
-                Message.maybesent != 1
+                Message.maybesent != True
             # )
             ) \
         .join(UserChat) \
