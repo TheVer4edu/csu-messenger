@@ -1,48 +1,316 @@
-<!doctype html>
+<!--<!doctype html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport"-->
+<!--          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">-->
+<!--    <meta http-equiv="X-UA-Compatible" content="ie=edge">-->
+<!--    <title>Chat</title>-->
+<!--    <link rel="stylesheet" href="/static/chat.css"/>-->
+<!--    <style>-->
+<!--        :root {-->
+<!--            &#45;&#45;background-color: white;-->
+<!--            &#45;&#45;chat-width: 50%;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body onLoad="loadPage(event)">-->
+<!--<h1>WebSocket Chat</h1>-->
+<!--<span id="status"></span>-->
+<!--<form action="" onsubmit="authorize(event)">-->
+<!--    <input type="text" id="userLogin" autocomplete="off" placeholder="login"/>-->
+<!--    <input type="password" id="userPassword" autocomplete="off" placeholder="password"/>-->
+<!--    <input type="submit" value="Login">-->
+<!--    <input type="button" onClick="logout(event)" value="Log out">-->
+<!--</form>-->
+<!--<hr>-->
+<!--<input type="button" onClick="loadAllMyChats(event)" value="Load my chats">-->
+<!--<ul id='mychats'>-->
+<!--</ul>-->
+<!--<hr>-->
+<!--<form action="" onsubmit="sendMessage(event)">-->
+<!--    <input type="text" id="messageText" autocomplete="off"/>-->
+<!--    <button>Send</button>-->
+<!--</form>-->
+<!--<form action="" onsubmit="sendScheduledMessage(event)">-->
+<!--    <input type="datetime-local" id="selectedDate"/>-->
+<!--    <button>Send scheduled message</button>-->
+<!--</form>-->
+<!--<center>-->
+<!--    <h2 id="chat-name"></h2>-->
+    <!--    <br/>-->
+    <!--    <span id="members"></span>-->
+<!--</center>-->
+<!--<ul id='messages' class="chat">-->
+<!--</ul>-->
+<!--</body>-->
+<!--</html>-->
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
     <link rel="stylesheet" href="/static/chat.css"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root {
-            --background-color: white;
-            --chat-width: 50%;
+        body {
+            background-color: #001BFF; /* Темно-синий фон */
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .logo {
+            width: 200px; /* Увеличен размер логотипа */
+        }
+        .navbar {
+            background-color: #001BFF;
+            padding: 15px;
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .btn-primary {
+            background-color: #FF1493; /* Лаймовый цвет */
+            font-weight: bold;
+            border: none;
+        }
+        .btn-secondary {
+            background-color: #FF1493; /* Ярко-розовый цвет */
+            font-weight: bold;
+            border: none;
+        }
+        h2 {
+            color: #ADFF2F; /* Лаймовый цвет */
+            font-weight: bold;
+        }
+        .chat {
+            height: 400px;
+            overflow-y: scroll;
+            border: 2px solid #FF1493; /* Ярко-розовый цвет */
+            padding: 10px;
+            background-color: #001BFF;
+        }
+        .message {
+            margin-bottom: 10px;
+            background-color: #ADFF2F; /* Гламурный зеленый цвет */
+            padding: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .message2 {
+            margin-bottom: 10px;
+            background-color: #FF1493; /* Гламурный зеленый цвет */
+            padding: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .input-group .form-control {
+            background-color: #001BFF;
+            color: white;
+            border: 2px solid #ADFF2F; /* Лаймовый цвет */
+        }
+        .input-group .btn-primary {
+            background-color: #FF1493; /* Ярко-розовый цвет */
+            font-weight: bold;
+            border: none;
+        }
+        .grid-background {
+            background-image: url('/static/grid-2.png'); /* Путь к вашему изображению сетки */
+            background-size: cover;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .styled-text {
+            color: #ADFF2F; /* Лаймовый цвет */
+            font-size: 1.5rem;
+            float: left;
+        }
+        .list-group-item {
+            background-color: #001BFF;
+            color: white;
+            border: 1px solid #00FF94; /* Гламурный зеленый цвет */
+            position: relative;
+        }
+        .list-group-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 20px solid #ADFF2F; /* Лаймовый цвет */
+            border-left: 20px solid transparent;
         }
     </style>
 </head>
 <body onLoad="loadPage(event)">
-<h1>WebSocket Chat</h1>
-<span id="status"></span>
-<form action="" onsubmit="authorize(event)">
-    <input type="text" id="userLogin" autocomplete="off" placeholder="login"/>
-    <input type="password" id="userPassword" autocomplete="off" placeholder="password"/>
-    <input type="submit" value="Login">
-    <input type="button" onClick="logout(event)" value="Log out">
-</form>
-<hr>
-<input type="button" onClick="loadAllMyChats(event)" value="Load my chats">
-<ul id='mychats'>
-</ul>
-<hr>
-<form action="" onsubmit="sendMessage(event)">
-    <input type="text" id="messageText" autocomplete="off"/>
-    <button>Send</button>
-</form>
-<form action="" onsubmit="sendScheduledMessage(event)">
-    <input type="datetime-local" id="selectedDate"/>
-    <button>Send scheduled message</button>
-</form>
-<center>
-    <h2 id="chat-name"></h2>
-    <br/>
-    <span id="members"></span>
-</center>
-<ul id='messages' class="chat">
-</ul>
+<div class="grid-background"></div>
+<!-- Логотип -->
+<nav class="navbar navbar-light">
+    <a class="navbar-brand" href="#">
+        <img src="/static/logo.png" alt="Logo" class="logo animate__animated animate__fadeInDown">
+    </a>
+</nav>
+
+<!-- Страница авторизации -->
+<div class="container" id="loginPage">
+    <div class="row justify-content-center">
+        <div class="col-md-6 wow animate__fadeInLeft">
+            <h2>Login</h2>
+            <form onsubmit="authorize(event)" action="">
+                <div class="form-group">
+                    <label for="name" class="styled-text">Login</label>
+                    <input type="text" class="form-control" id="name" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="nickname" class="styled-text">Password</label>
+                    <input type="password" class="form-control" id="nickname" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Страница выбора чата -->
+<div class="container" id="chatSelectionPage" style="display:none;">
+    <div class="row justify-content-center">
+        <div class="col-md-6 wow animate__fadeInRight">
+            <button class="btn btn-secondary mt-3" onclick="logout(event)">Log out</button>
+            <h2>Select a Chat</h2>
+            <ul class="list-group">
+                <!--                    <li class="list-group-item list-group-item-action" onclick="joinChat('General Chat')">General Chat</li>-->
+                <!--                    <li class="list-group-item list-group-item-action" onclick="joinChat('Sports Chat')">Sports Chat</li>-->
+                <!--                    <li class="list-group-item list-group-item-action" onclick="joinChat('Tech Chat')">Tech Chat</li>-->
+            </ul>
+            <button class="btn btn-secondary mt-3" onclick="createChat()">Create a new Chat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Страница чата -->
+<div class="container" id="chatPage" style="display:none;">
+    <div class="row">
+        <div class="col-md-12 wow animate__fadeInUp">
+            <button class="btn btn-secondary mb-3" onclick="goBack()">Back</button>
+            <h2 id="chatName"></h2>
+            <br/>
+            <span id="members"></span>
+            <ul class="chat" id="messages"></ul>
+            <form action="" onsubmit="sendMessage(event)">
+                <div class="input-group mt-3">
+
+                    <input type="text" class="form-control" id="messageText" autocomplete="off"
+                           placeholder="Type a message">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+<script>
+    new WOW().init();
+
+    const chats = {
+        'General Chat': [],
+        'Sports Chat': [],
+        'Tech Chat': []
+    };
+    let currentChat = '';
+
+    function onLogin() {
+        const name = document.getElementById('name').value;
+        const nickname = document.getElementById('nickname').value;
+        // Simulate login
+        console.log(`Logged in as ${name} (${nickname})`);
+        history.pushState({page: 'chatSelectionPage'}, '', '#chatSelection');
+        showPage('chatSelectionPage');
+        loadAllMyChats(event)
+    }
+
+    function joinChat(chatName) {
+        currentChat = chatName;
+        document.getElementById('chatName').innerText = chatName;
+        history.pushState({page: 'chatPage'}, '', `#chat/${chatName}`);
+        showPage('chatPage');
+        loadMessages();
+    }
+
+    function createChat() {
+        const chatName = prompt("Enter chat name:");
+        if (chatName) {
+            chats[chatName] = [];
+            joinChat(chatName);
+        }
+    }
+
+    function loadMessages() {
+        const chatContainer = document.getElementById('messages');
+        chatContainer.innerHTML = '';
+        return;
+        chats[currentChat].forEach(message => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.innerText = message;
+            chatContainer.appendChild(messageDiv);
+        });
+    }
+
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        if (message) {
+            chats[currentChat].push(message);
+            loadMessages();
+            messageInput.value = '';
+        }
+    }
+
+    function goBack() {
+        history.back();
+    }
+
+    function showPage(pageId) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('chatSelectionPage').style.display = 'none';
+        document.getElementById('chatPage').style.display = 'none';
+        document.getElementById(pageId).style.display = 'block';
+    }
+
+    window.onpopstate = function(event) {
+        if (event.state && event.state.page) {
+            showPage(event.state.page);
+        } else {
+            showPage('loginPage');
+        }
+    };
+
+    // Initial page load
+    if (location.hash.startsWith('#chat/')) {
+        const chatName = location.hash.split('/')[1];
+        if (chats[chatName]) {
+            joinChat(chatName);
+        } else {
+            showPage('loginPage');
+        }
+    } else if (location.hash === '#chatSelection') {
+        showPage('chatSelectionPage');
+    } else {
+        showPage('loginPage');
+    }
+</script>
 </body>
 </html>
 
@@ -53,7 +321,7 @@
                 + currentdate.getDate() + "T"
                 + currentdate.getHours() + ":"
                 + currentdate.getMinutes()
-    document.getElementById('selectedDate').min = datetimemin
+    // document.getElementById('selectedDate').min = datetimemin
     var all_messages = []
     var global_chat_id = null;
     var global_members = [];
@@ -61,10 +329,12 @@
     function loadPage(event) {
         TOKEN = localStorage.getItem("TOKEN")
         if(TOKEN !== null) {
-            document.getElementById("status").innerHTML = `<font color='#00FF00'>Authorized as ${localStorage.getItem("USER_NAME")} (${localStorage.getItem("USER_LOGIN")})</font>`
+            onLogin()
+            // document.getElementById("status").innerHTML = `<font color='#00FF00'>Authorized as ${localStorage.getItem("USER_NAME")} (${localStorage.getItem("USER_LOGIN")})</font>`
         }
         else {
-            document.getElementById("status").innerHTML = "<font color='#FF0000'>Unauthorized</font>"
+            showPage('loginPage')
+            // document.getElementById("status").innerHTML = "<font color='#FF0000'>Unauthorized</font>"
         }
     }
     var ws = null;
@@ -81,6 +351,7 @@
             var div = document.createElement('div')
             var user = global_members.filter(member => member.id == msg.user_id)[0]
             var buttons = `<button onclick='deleteMessage(${msg.id})'>X</button><button onclick='editMessage(${msg.id})'>🖉</button>`
+            console.log("isJson" + global_members)
             div.innerHTML = `<font size="2"><i>${user.name} (${user.login})</i></font><br>${msg.text}<br>${msg.user_id == localStorage.getItem("USER_ID") ? buttons : ""}`;
             message.appendChild(div)
             messages.appendChild(message)
@@ -143,9 +414,9 @@
     async function authorize(event) {
         event.preventDefault()
         const formData = new FormData();
-        var login = document.getElementById("userLogin")
+        var login = document.getElementById("name")
         formData.append('username', login.value);
-        var password  = document.getElementById("userPassword")
+        var password  = document.getElementById("nickname")
         formData.append('password', password.value);
         await fetch('/login/', {method: 'POST', body: formData}).then(r => r.json())
             .then(data => {
@@ -170,9 +441,10 @@
     function logout(event) {
         localStorage.removeItem("TOKEN")
         loadPage(null)
+        // goBack()
     }
     function loadAllMyChats(event) {
-        event.preventDefault()
+        // event.preventDefault()
         const TOKEN = localStorage.getItem("TOKEN")
         if(TOKEN === "null") {
             alert("Authenticate before")
@@ -181,28 +453,35 @@
         var result = Array();
         fetch('/chat/my', {method: 'GET', headers: { Authorization: "Bearer " + TOKEN }}).then(r => r.json())
             .then(data => data.forEach(element => {
-                var mychats = document.getElementById('mychats')
+                var mychats = document.getElementsByClassName('list-group')[0]
+                mychats.innerHTML = ""
                 var oneChat = document.createElement('li')
-                var button = document.createElement('button')
-                button.setAttribute("onClick", `connectToChat(${element.id}, '${element.name}')`);
+                oneChat.classList.add("list-group-item");
+                oneChat.classList.add("list-group-item-action");
+                oneChat.setAttribute("onClick", `connectToChat(${element.id}, '${element.name}')`);
+                // var button = document.createElement('button')
+                // button.setAttribute("onClick", `connectToChat(${element.id}, '${element.name}')`);
                 var content = document.createTextNode(element.name)
-                button.appendChild(content)
-                oneChat.appendChild(button)
+                // button.appendChild(content)
+                oneChat.appendChild(content)
                 mychats.appendChild(oneChat)
             }))
     }
     var lastChatId, lastChatName;
     function connectToChat(chat_id, chat_name) {
+        joinChat(chat_name)
         lastChatId = chat_id
         lastChatName = chat_name
         ws?.close();
-        document.getElementById('chat-name').innerHTML = `U're in chat: <i>${chat_name}<\i>`;
+        // document.getElementById('chat-name').innerHTML = `U're in chat: <i>${chat_name}<\i>`;
         fetch(`/chat/members?chat_id=${chat_id}`,{ headers: { Authorization: "Bearer " + TOKEN, "Content-Type": "application/json" }}).then(r => r.json())
             .then(data => {
                     var mychats = document.getElementById('members')
+                    console.log("global_members " + data)
                     global_members = data;
                     var users = data.map(member => `${member.name} aka ${member.login}`)
                     var content = document.createTextNode(`Members (${users.length}): ${users.join(', ')}`)
+                    mychats.innerHTML = ""
                     mychats.appendChild(content)
                     return data
                 }
